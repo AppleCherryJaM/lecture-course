@@ -5,7 +5,7 @@ export interface Game {
 	platform: string[];
 	releaseYear: string;
 	inStock: boolean;
-	cover: string;
+	cover?: string;
 	price: number;
 	rating: number;
 }
