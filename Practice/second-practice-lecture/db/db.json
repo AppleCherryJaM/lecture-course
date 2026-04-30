@@ -1,0 +1,26 @@
+{
+  "games": [
+    {
+      "id": 1,
+      "title": "The Witcher 3",
+      "genre": "RPG",
+      "price": 29.99,
+      "rating": 9.5,
+      "platform": ["PC", "PS5", "Xbox"],
+      "cover": "https://example.com/witcher3.jpg",
+      "releaseYear": 2015,
+      "inStock": true
+    },
+    {
+      "id": 2,
+      "title": "Elden Ring",
+      "genre": "Action RPG",
+      "price": 59.99,
+      "rating": 9.8,
+      "platform": ["PC", "PS5", "Xbox"],
+      "cover": "https://example.com/eldenring.jpg",
+      "releaseYear": 2022,
+      "inStock": true
+    }
+  ]
+}
