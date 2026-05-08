@@ -6,7 +6,11 @@
       "genre": "RPG",
       "price": 29.99,
       "rating": 9.5,
-      "platform": ["PC", "PS5", "Xbox"],
+      "platform": [
+        "PC",
+        "PS5",
+        "Xbox"
+      ],
       "cover": "https://upload.wikimedia.org/wikipedia/en/0/0c/Witcher_3_cover_art.jpg",
       "releaseYear": 2015,
       "inStock": true
@@ -17,7 +21,11 @@
       "genre": "Action RPG",
       "price": 59.99,
       "rating": 9.8,
-      "platform": ["PC", "PS5", "Xbox"],
+      "platform": [
+        "PC",
+        "PS5",
+        "Xbox"
+      ],
       "cover": "https://upload.wikimedia.org/wikipedia/en/5/51/Elden_Ring_Boxart.jpg",
       "releaseYear": 2022,
       "inStock": true
@@ -28,7 +36,11 @@
       "genre": "Action RPG",
       "price": 39.99,
       "rating": 8.5,
-      "platform": ["PC", "PS5", "Xbox"],
+      "platform": [
+        "PC",
+        "PS5",
+        "Xbox"
+      ],
       "cover": "https://upload.wikimedia.org/wikipedia/en/9/9f/Cyberpunk_2077_box_art.jpg",
       "releaseYear": 2020,
       "inStock": true
@@ -39,7 +51,12 @@
       "genre": "Metroidvania",
       "price": 14.99,
       "rating": 9.4,
-      "platform": ["PC", "PS4", "Xbox", "Switch"],
+      "platform": [
+        "PC",
+        "PS4",
+        "Xbox",
+        "Switch"
+      ],
       "cover": "https://upload.wikimedia.org/wikipedia/en/0/04/Hollow_Knight_cover.jpg",
       "releaseYear": 2017,
       "inStock": true
@@ -50,10 +67,22 @@
       "genre": "Action",
       "price": 49.99,
       "rating": 9.6,
-      "platform": ["PS5", "PS4"],
+      "platform": [
+        "PS5",
+        "PS4"
+      ],
       "cover": "https://upload.wikimedia.org/wikipedia/en/0/00/God_of_War_Ragnar%C3%B6k_cover.jpg",
       "releaseYear": 2022,
       "inStock": false
+    },
+    {
+      "title": "Songs of Silence",
+      "genre": "Strategy",
+      "platform": [
+        "PC",
+        "Xbox"
+      ],
+      "id": 6
     }
   ]
 }

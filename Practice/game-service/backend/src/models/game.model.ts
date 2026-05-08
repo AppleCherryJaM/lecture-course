@@ -7,5 +7,5 @@ export interface Game {
 	inStock: boolean;
 	cover?: string;
 	price: number;
-	rating: number;
+	rating?: number;
 }
