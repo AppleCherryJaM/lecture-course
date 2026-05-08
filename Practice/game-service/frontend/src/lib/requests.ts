@@ -1,4 +1,4 @@
-import type { Game, PaginatedResult } from "../types/types";
+import type { Game, GameFormPayload, PaginatedResult } from "../types/types";
 
 const API_URL = import.meta.env.VITE_API_URL
 
@@ -22,7 +22,7 @@ export async function fetchGameById(id: number): Promise<Game> {
     return response.json()
 }
 
-export async function createGame(gameData: { title: string; genre: string; platform: string[] }): Promise<Game> {
+export async function createGame(gameData: GameFormPayload): Promise<Game> {
     const response = await fetch(`${API_URL}/games/new`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -36,7 +36,7 @@ export async function createGame(gameData: { title: string; genre: string; platf
     return response.json()
 }
 
-export async function updateGame(id: number, gameData: { title?: string; genre?: string; platform?: string[] }): Promise<Game> {
+export async function updateGame(id: number, gameData: Partial<GameFormPayload>): Promise<Game> {
     const response = await fetch(`${API_URL}/games/${id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },

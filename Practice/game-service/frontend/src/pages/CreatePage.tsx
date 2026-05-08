@@ -4,7 +4,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import styles from "./CreatePage.module.css";
 import GameForm from "../components/game-form/GameForm";
 import { createGame, fetchGameById, updateGame } from "../lib/requests";
-import { Game } from "../types/types";
+import { Game, GameFormPayload } from "../types/types";
 
 function CreatePage() {
     const { id } = useParams<{ id?: string }>();
@@ -34,11 +34,7 @@ function CreatePage() {
         loadGame();
     }, [id]);
 
-    async function handleSubmit(data: {
-        title: string;
-        genre: string;
-        platform: string[];
-    }) {
+    async function handleSubmit(data: GameFormPayload) {
         if (isEditMode && id) {
             await updateGame(Number(id), data);
         } else {

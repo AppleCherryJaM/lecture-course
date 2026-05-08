@@ -82,7 +82,11 @@
         "PC",
         "Xbox"
       ],
-      "id": 6
+      "id": 6,
+      "releaseYear": 2015,
+      "price": 600,
+      "cover": "https://gaming-cdn.com/images/products/16324/orig/songs-of-silence-pc-game-steam-cover.jpg?v=1731596294",
+      "inStock": true
     }
   ]
 }

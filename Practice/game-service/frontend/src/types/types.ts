@@ -2,12 +2,22 @@ export interface Game {
     id: number;
     title: string;
     genre: string;
-    releaseYear: string;
+    releaseYear: number;
     price: number;
     platform: string[];
     cover?: string;
     inStock: boolean;
     rating?: number;
+}
+
+export interface GameFormPayload {
+    title: string;
+    genre: string;
+    releaseYear: number;
+    price: number;
+    platform: string[];
+    cover?: string;
+    inStock?: boolean;
 }
 
 export interface PaginatedResult<T> {

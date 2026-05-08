@@ -1,12 +1,12 @@
 import { useState } from "react";
-import type { Game } from "../../types/types";
+import type { Game, GameFormPayload } from "../../types/types";
 import styles from "./GameForm.module.css";
 
 // То, что вводит пользователь в форме
 interface GameFormData {
     title: string;
     genre: string;
-    releaseYear: string;
+    releaseYear: number;
     price: string;
     platformInput: string; // платформы вводим через запятую
     cover: string;
@@ -14,12 +14,8 @@ interface GameFormData {
 }
 
 interface GameFormProps {
-    initialData?: Game;           // если передан — это режим редактирования
-    onSubmit: (data: {
-        title: string;
-        genre: string;
-        platform: string[];
-    }) => Promise<void>;
+    initialData?: Game;
+    onSubmit: (data: GameFormPayload) => Promise<void>;
     submitLabel: string;
 }
 
@@ -27,7 +23,7 @@ function GameForm({ initialData, onSubmit, submitLabel }: GameFormProps) {
     const [formData, setFormData] = useState<GameFormData>({
         title: initialData?.title ?? "",
         genre: initialData?.genre ?? "",
-        releaseYear: initialData?.releaseYear ?? "",
+        releaseYear: initialData?.releaseYear ?? 2015,
         price: initialData?.price?.toString() ?? "",
         platformInput: initialData?.platform.join(", ") ?? "",
         cover: initialData?.cover ?? "",
@@ -71,7 +67,15 @@ function GameForm({ initialData, onSubmit, submitLabel }: GameFormProps) {
         try {
             setLoading(true);
             setError(null);
-            await onSubmit({ title: formData.title, genre: formData.genre, platform });
+            await onSubmit({
+                title: formData.title,
+                genre: formData.genre,
+                platform,
+                releaseYear: formData.releaseYear ? Number(formData.releaseYear) : 2015,
+                price: formData.price ? Number(formData.price) : 1000,
+                cover: formData.cover || undefined,
+                inStock: formData.inStock,
+            });
         } catch {
             setError("Что-то пошло не так. Попробуйте ещё раз.");
         } finally {
