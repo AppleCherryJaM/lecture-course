@@ -3,8 +3,6 @@ import { TranslationError } from "../types/errors";
 import { translate } from "../services/translate.service";
 
 class TranslateController {
-    constructor() {}
-
     public async translate(req: Request, res: Response, next: NextFunction) {
         try {
             const { text, target, source } = req.body;
