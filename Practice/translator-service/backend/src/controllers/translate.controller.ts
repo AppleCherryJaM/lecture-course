@@ -1,16 +1,22 @@
 import { Request, Response, NextFunction } from "express";
 import { TranslationError } from "../types/errors";
-import { translate } from "../services/translate.service";
+import { TranslateService } from "../services/translate.service";
 
 class TranslateController {
-    public async translate(req: Request, res: Response, next: NextFunction) {
+    private readonly translationService = new TranslateService();
+
+    public translate = async (req: Request, res: Response, next: NextFunction) => {
         try {
             const { text, target, source } = req.body;
-            const translatedText = await translate({ text, target, source });
+            const translatedText = await this.translationService.translate({ text, target, source });
             res.json({ translatedText });
         } catch (error: TranslationError | any) {
-           next(error);
+            next(error);
         }
+    }
+
+    public getTranslationHistory = async (req: Request, res: Response, next: NextFunction) => {
+        // Здесь будет обращение к сервису для получения истории переводов
     }
 }
 

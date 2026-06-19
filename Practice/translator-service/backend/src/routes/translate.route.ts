@@ -7,4 +7,4 @@ const translateRoute = Router();
 
 translateRoute.post("/", validate(TranslateSchema), TranslateController.translate);
 
-export { translateRoute };
+export default translateRoute;

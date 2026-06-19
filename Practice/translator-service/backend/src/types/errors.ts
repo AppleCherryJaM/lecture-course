@@ -1,11 +1,16 @@
 export class TranslationError extends Error {
-    private status: number;
 
-    constructor(message: string) {
+    constructor(
+        public message: string,
+        private status: number = 500,
+        public code?: string,
+    ) {
         super(message);
-        this.status = 500;
+        this.name = 'AppError';
+        this.status = status;
+        this.code = code;
     }
-    
+
     public getStatus(): number {
         return this.status;
     }
