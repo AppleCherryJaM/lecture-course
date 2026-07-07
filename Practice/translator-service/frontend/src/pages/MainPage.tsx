@@ -1,24 +1,24 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useCallback } from 'react';
 import { Navigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import LanguageDropdown from '../components/LanguageDropdown';
-import InputField from '../components/InputField';
 import Layout from '../components/layout/Layout';
+import TranslatorPanel from '../components/TranslatorPanel';
+import HistoryDrawer, { type HistoryItem } from '../components/HistoryDrawer';
 import {
   Box,
   Button,
   IconButton,
-  Paper,
-  Tooltip,
   Snackbar,
   Alert,
+  Tooltip,
   CircularProgress,
 } from '@mui/material';
 import Grid from '@mui/material/Grid';
+import HistoryIcon from '@mui/icons-material/History';
 import SwapHorizIcon from '@mui/icons-material/SwapHoriz';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import ClearIcon from '@mui/icons-material/Clear';
-import TranslateIcon from '@mui/icons-material/Translate';
+import TranslateButton from '../components/TranslateButton';
 
 const MainPage: React.FC = () => {
   const { isAuthenticated, loading: authLoading } = useAuth();
@@ -32,7 +32,37 @@ const MainPage: React.FC = () => {
   const [toastMessage, setToastMessage] = useState('');
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
-  const debounceTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [historyOpen, setHistoryOpen] = useState(false);
+  const [history, setHistory] = useState<HistoryItem[]>([]);
+  const [historyLoading, setHistoryLoading] = useState(false);
+  const [historyTotal, setHistoryTotal] = useState(0);
+  const [historyOffset, setHistoryOffset] = useState(0);
+
+  const fetchHistory = useCallback(async (offset = 0, append = false) => {
+    setHistoryLoading(true);
+    try {
+      const response = await fetch(`/api/translate/history?limit=10&offset=${offset}`);
+      if (response.ok) {
+        const data = await response.json();
+        if (append) {
+          setHistory(prev => [...prev, ...data.records]);
+        } else {
+          setHistory(data.records);
+        }
+        setHistoryTotal(data.total);
+        setHistoryOffset(offset);
+      }
+    } catch (err) {
+      console.error('Failed to fetch history:', err);
+    } finally {
+      setHistoryLoading(false);
+    }
+  }, []);
+
+  const handleOpenHistory = () => {
+    setHistoryOpen(true);
+    fetchHistory(0, false);
+  };
 
   const performTranslation = useCallback(async () => {
     if (!sourceText.trim()) return;
@@ -45,7 +75,7 @@ const MainPage: React.FC = () => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           text: sourceText,
-          source: sourceLang || undefined, // undefined will let backend auto-detect
+          source: sourceLang || undefined,
           target: targetLang,
         }),
       });
@@ -56,34 +86,14 @@ const MainPage: React.FC = () => {
       }
 
       setTranslatedText(data.translatedText);
+      fetchHistory(0, false);
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to translate text';
       setErrorMsg(errorMessage);
     } finally {
       setTranslating(false);
     }
-  }, [sourceText, sourceLang, targetLang]);
-
-  // Auto-translation effect when text or languages change
-  useEffect(() => {
-    if (!sourceText.trim()) {
-      return;
-    }
-
-    if (debounceTimeout.current) {
-      clearTimeout(debounceTimeout.current);
-    }
-
-    debounceTimeout.current = setTimeout(() => {
-      performTranslation();
-    }, 800); // 800ms debounce
-
-    return () => {
-      if (debounceTimeout.current) {
-        clearTimeout(debounceTimeout.current);
-      }
-    };
-  }, [sourceText, performTranslation]);
+  }, [sourceText, sourceLang, targetLang, fetchHistory]);
 
   const handleSourceTextChange = (text: string) => {
     setSourceText(text);
@@ -114,13 +124,11 @@ const MainPage: React.FC = () => {
   }
 
   const handleSwapLanguages = () => {
-    // If source language is Auto-detect, we cannot swap directly unless we default it
     const newSource = targetLang;
-    const newTarget = sourceLang || 'ru'; // fallback target to Russian if source was auto
+    const newTarget = sourceLang || 'ru';
     setSourceLang(newSource);
     setTargetLang(newTarget);
     
-    // Swap texts as well if translation exists
     if (translatedText) {
       setSourceText(translatedText);
       setTranslatedText(sourceText);
@@ -142,7 +150,6 @@ const MainPage: React.FC = () => {
 
   return (
     <Layout>
-      {/* Main Content */}
       <Box sx={{ flexGrow: 1, py: 6, px: 3, display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
         <Box sx={{ width: '100%', maxWidth: 1100 }}>
           {errorMsg && (
@@ -151,59 +158,44 @@ const MainPage: React.FC = () => {
             </Alert>
           )}
 
+          <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 2 }}>
+            <Button
+              variant="outlined"
+              onClick={handleOpenHistory}
+              startIcon={<HistoryIcon />}
+              sx={{
+                color: '#818cf8',
+                borderColor: 'rgba(99, 102, 241, 0.3)',
+                borderRadius: 2.5,
+                textTransform: 'none',
+                px: 3,
+                py: 1,
+                '&:hover': {
+                  borderColor: '#818cf8',
+                  bgcolor: 'rgba(99, 102, 241, 0.08)',
+                },
+                transition: 'all 0.2s',
+              }}
+            >
+              History
+            </Button>
+          </Box>
+
           <Grid container spacing={4} sx={{ alignItems: 'stretch' }}>
             {/* Source text section */}
             <Grid size={{ xs: 12, md: 5.5 }}>
-              <Paper
-                elevation={6}
-                sx={{
-                  p: 3,
-                  height: '100%',
-                  borderRadius: 4,
-                  bgcolor: 'rgba(30, 41, 59, 0.5)',
-                  backdropFilter: 'blur(20px)',
-                  border: '1px solid rgba(255, 255, 255, 0.08)',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  gap: 2.5,
-                }}
-              >
-                <LanguageDropdown
-                  value={sourceLang}
-                  onChange={setSourceLang}
-                  label="Source Language"
-                  includeAuto
-                />
-                
-                <Box sx={{ position: 'relative', width: '100%', flexGrow: 1 }}>
-                  <InputField
-                    value={sourceText}
-                    onChange={handleSourceTextChange}
-                    placeholder="Type text to translate..."
-                  />
-                  {sourceText && (
-                    <Tooltip title="Clear">
-                      <IconButton
-                        onClick={handleClear}
-                        size="small"
-                        sx={{
-                          position: 'absolute',
-                          right: 12,
-                          bottom: 12,
-                          color: 'rgba(255, 255, 255, 0.5)',
-                          bgcolor: 'rgba(15, 23, 42, 0.5)',
-                          '&:hover': {
-                            bgcolor: 'rgba(15, 23, 42, 0.8)',
-                            color: '#ffffff',
-                          },
-                        }}
-                      >
-                        <ClearIcon fontSize="small" />
-                      </IconButton>
-                    </Tooltip>
-                  )}
-                </Box>
-              </Paper>
+              <TranslatorPanel
+                langValue={sourceLang}
+                onLangChange={setSourceLang}
+                langLabel="Source Language"
+                includeAuto
+                value={sourceText}
+                onChange={handleSourceTextChange}
+                placeholder="Type text to translate..."
+                actionIcon={<ClearIcon fontSize="small" />}
+                actionTooltip="Clear"
+                onActionClick={handleClear}
+              />
             </Grid>
 
             {/* Central Controls */}
@@ -237,112 +229,38 @@ const MainPage: React.FC = () => {
                 </IconButton>
               </Tooltip>
 
-              <Button
-                variant="contained"
+              <TranslateButton
                 onClick={performTranslation}
-                disabled={translating || !sourceText.trim()}
-                sx={{
-                  display: { xs: 'inline-flex', md: 'none' },
-                  borderRadius: 2.5,
-                  px: 3,
-                  py: 1,
-                  background: 'linear-gradient(45deg, #6366f1, #a855f7)',
-                }}
-              >
-                Translate
-              </Button>
+                disabled={!sourceText.trim()}
+                loading={translating}
+              />
             </Grid>
 
             {/* Target text section */}
             <Grid size={{ xs: 12, md: 5.5 }}>
-              <Paper
-                elevation={6}
-                sx={{
-                  p: 3,
-                  height: '100%',
-                  borderRadius: 4,
-                  bgcolor: 'rgba(30, 41, 59, 0.5)',
-                  backdropFilter: 'blur(20px)',
-                  border: '1px solid rgba(255, 255, 255, 0.08)',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  gap: 2.5,
-                }}
-              >
-                <LanguageDropdown
-                  value={targetLang}
-                  onChange={setTargetLang}
-                  label="Target Language"
-                />
-
-                <Box sx={{ position: 'relative', width: '100%', flexGrow: 1 }}>
-                  <InputField
-                    value={translatedText}
-                    readOnly
-                    placeholder={translating ? 'Translating...' : 'Translation will appear here...'}
-                  />
-                  {translating && (
-                    <Box
-                      sx={{
-                        position: 'absolute',
-                        top: '50%',
-                        left: '50%',
-                        transform: 'translate(-50%, -50%)',
-                      }}
-                    >
-                      <CircularProgress size={40} sx={{ color: '#a855f7' }} />
-                    </Box>
-                  )}
-                  {translatedText && !translating && (
-                    <Tooltip title="Copy">
-                      <IconButton
-                        onClick={handleCopy}
-                        size="small"
-                        sx={{
-                          position: 'absolute',
-                          right: 12,
-                          bottom: 12,
-                          color: 'rgba(255, 255, 255, 0.5)',
-                          bgcolor: 'rgba(15, 23, 42, 0.5)',
-                          '&:hover': {
-                            bgcolor: 'rgba(15, 23, 42, 0.8)',
-                            color: '#ffffff',
-                          },
-                        }}
-                      >
-                        <ContentCopyIcon fontSize="small" />
-                      </IconButton>
-                    </Tooltip>
-                  )}
-                </Box>
-              </Paper>
+              <TranslatorPanel
+                langValue={targetLang}
+                onLangChange={setTargetLang}
+                langLabel="Target Language"
+                value={translatedText}
+                placeholder="Translation will appear here..."
+                readOnly
+                loading={translating}
+                actionIcon={<ContentCopyIcon fontSize="small" />}
+                actionTooltip="Copy"
+                onActionClick={handleCopy}
+              />
             </Grid>
           </Grid>
 
           {/* Manual translate button for desktop */}
           <Box sx={{ display: { xs: 'none', md: 'flex' }, justifyContent: 'center', mt: 4 }}>
-            <Button
-              variant="contained"
+            <TranslateButton
               onClick={performTranslation}
-              disabled={translating || !sourceText.trim()}
-              startIcon={<TranslateIcon />}
-              sx={{
-                borderRadius: 3,
-                px: 5,
-                py: 1.8,
-                fontSize: '1.05rem',
-                fontWeight: 'bold',
-                background: 'linear-gradient(45deg, #6366f1 30%, #a855f7 90%)',
-                boxShadow: '0 4px 20px rgba(99, 102, 241, 0.4)',
-                '&:hover': {
-                  background: 'linear-gradient(45deg, #4f46e5 30%, #9333ea 90%)',
-                  transform: 'translateY(-1px)',
-                },
-                transition: 'transform 0.2s',
-              }}
-            >
-              {translating ? 'Translating...' : 'Translate'}
-            </Button>
+              disabled={!sourceText.trim()}
+              loading={translating}
+              desktop
+            />
           </Box>
         </Box>
       </Box>
@@ -358,6 +276,24 @@ const MainPage: React.FC = () => {
           {toastMessage}
         </Alert>
       </Snackbar>
+
+      {/* History Drawer */}
+      <HistoryDrawer
+        open={historyOpen}
+        onClose={() => setHistoryOpen(false)}
+        history={history}
+        loading={historyLoading}
+        total={historyTotal}
+        offset={historyOffset}
+        onLoadMore={() => fetchHistory(historyOffset + 10, true)}
+        onSelectHistoryItem={(item) => {
+          setSourceText(item.input_text);
+          setSourceLang(item.from_lang || '');
+          setTargetLang(item.to_lang);
+          setTranslatedText(item.translated_text);
+          setHistoryOpen(false);
+        }}
+      />
     </Layout>
   );
 };

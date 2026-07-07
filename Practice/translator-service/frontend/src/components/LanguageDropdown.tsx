@@ -1,22 +1,7 @@
 import React from 'react';
 import { FormControl, InputLabel, Select, MenuItem } from '@mui/material';
 
-export interface Language {
-  code: string;
-  name: string;
-  flag?: string;
-}
-
-// eslint-disable-next-line react-refresh/only-export-components
-export const LANGUAGES: Language[] = [
-  { code: 'en', name: 'English', flag: '🇬🇧' },
-  { code: 'ru', name: 'Russian', flag: '🇷🇺' },
-  { code: 'es', name: 'Spanish', flag: '🇪🇸' },
-  { code: 'de', name: 'German', flag: '🇩🇪' },
-  { code: 'fr', name: 'French', flag: '🇫🇷' },
-  { code: 'it', name: 'Italian', flag: '🇮🇹' },
-  { code: 'zh', name: 'Chinese', flag: '🇨🇳' },
-];
+import { LANGUAGES } from '../utils/constants';
 
 interface LanguageDropdownProps {
   value: string;

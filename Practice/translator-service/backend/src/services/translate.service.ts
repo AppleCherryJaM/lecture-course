@@ -11,7 +11,8 @@ export class TranslateService {
   }
 
   public async translate(
-    { text, target, source }: TranslationRequest
+    { text, target, source }: TranslationRequest,
+    userId: number | null
   ): Promise<string> {
     try {
       const result = await googleTranslate(text, {
@@ -25,8 +26,8 @@ export class TranslateService {
         to_lang: target,
         input_text: text,
         translated_text: result.text,
-        user_id: null
-      })
+        user_id: userId
+      });
 
       return result.text;
     } catch (error) {
@@ -38,9 +39,21 @@ export class TranslateService {
 
       throw TranslationError.apiError(500, "Failed to translate text");
     }
-  };
+  }
 
-  public async getTranslationHistory() {
-    // Здесь будет логика получения истории переводов из базы данных
+  public async getTranslationHistory(userId: number, limit: number, offset: number) {
+    try {
+      const records = await this.recordRepo.findByUserId(userId, limit, offset);
+      const total = await this.recordRepo.countByUserId(userId);
+      return {
+        records,
+        total,
+        limit,
+        offset
+      };
+    } catch (error) {
+      console.error(error);
+      throw TranslationError.apiError(500, "Failed to retrieve translation history");
+    }
   }
 }
