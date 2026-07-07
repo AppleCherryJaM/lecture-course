@@ -1,17 +1,37 @@
-import { NextFunction } from "express";
-import { Request, Response } from "express";
+import { Request, Response, NextFunction } from "express";
+import { SessionManager } from "../services/session.manager";
+
 export function authMiddleware(
   req: Request,
   res: Response,
   next: NextFunction
 ): void {
-  const token = req.headers.authorization?.split(' ')[1];
+  const cookieHeader = req.headers.cookie;
+  const cookies: Record<string, string> = {};
 
-  if (!token) {
-    res.status(401).json({ error: 'No token provided' });
-    return; // важно: не вызываем next() после ответа
+  if (cookieHeader) {
+    cookieHeader.split(';').forEach((cookie) => {
+      const parts = cookie.split('=');
+      const name = parts.shift()?.trim();
+      if (name) {
+        cookies[name] = decodeURIComponent(parts.join('='));
+      }
+    });
   }
 
-  // проверка токена...
+  const sessionId = cookies['sessionId'];
+
+  if (!sessionId) {
+    res.status(401).json({ error: 'Unauthorized: No session token provided' });
+    return;
+  }
+
+  const userId = SessionManager.getUserId(sessionId);
+  if (!userId) {
+    res.status(401).json({ error: 'Unauthorized: Invalid or expired session' });
+    return;
+  }
+
+  res.locals.userId = userId;
   next();
 }
